@@ -1,14 +1,12 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import Role from 'App/Models/Role'
 import User from 'App/Models/User'
 
 export default class AuthController {
 
     public async register({ request, response }: HttpContextContract) {
 
-        const { email, password, username, phone , birthdate, name, lastname, age} = request.all()
-        const role = await Role.findByOrFail('slug', 'support')
-        const user = await User.create({ name, lastname, age, birthdate, email, password, username, phone, roleId: role.id})
+        const { email, password, username, name, lastname} = request.all()
+        const user = await User.create({ name, lastname, email, password, username})
 
         return response.json({ user })
     }
@@ -18,7 +16,8 @@ export default class AuthController {
 
         try {
             const token = await auth.use('api').attempt(userId, password)
-            return response.json({ token })
+            const user = auth.user;
+            return response.ok({ token, user });
         }
         catch {
             return response.badRequest('Invalid user or password')
