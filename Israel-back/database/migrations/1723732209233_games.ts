@@ -10,6 +10,9 @@ export default class extends BaseSchema {
       table.integer('player_two').unsigned().references('id').inTable('users')
       table.integer('winner').unsigned().references('id').inTable('users')
       table.integer('numsala').unsigned()
+      table.integer('width').unsigned()
+      table.integer('height').unsigned()
+      table.string('board').unsigned()
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
        */
