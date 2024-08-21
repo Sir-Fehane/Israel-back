@@ -1,6 +1,7 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Game from 'App/Models/Game'
 import Ws from 'App/Services/Ws'
+import User from 'App/Models/User'
 import { randomBytes } from 'crypto'
 
 export default class GamesController {
@@ -59,12 +60,13 @@ export default class GamesController {
 
   // Unirse a una sala de un amigo
   public async joinRoomByFriend({ request, auth, response }: HttpContextContract) {
-    const { friendId } = request.only(['friendId'])
+    const { username } = request.only(['username'])
     const user = auth.user!
+    const friend = await User.findByOrFail('username', username)
 
     // Aquí puedes agregar lógica para verificar si `friendId` es amigo del usuario
     const game = await Game.query()
-      .where('playerOne', friendId)
+      .where('playerOne', friend.id)
       .andWhereNull('playerTwo')
       .first()
 
