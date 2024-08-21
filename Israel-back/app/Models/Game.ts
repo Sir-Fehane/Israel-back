@@ -18,6 +18,18 @@ export default class Game extends BaseModel {
   @column()
   public numsala: number
 
+  @column()
+  public width: number
+
+  @column()
+  public height: number
+
+  @column()
+  public board: string
+
+  @column()
+  public currentTurn: number
+
   @belongsTo(() => User, {
     foreignKey: 'playerOne',
   })
