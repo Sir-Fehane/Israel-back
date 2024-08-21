@@ -8,6 +8,7 @@ export default class UserFriends extends BaseSchema {
       table.increments('id')
       table.integer('user_id').unsigned().references('id').inTable('users').onDelete('CASCADE')
       table.integer('friend_id').unsigned().references('id').inTable('users').onDelete('CASCADE')
+      table.enu('status', ['pending', 'accepted', 'blocked']).defaultTo('pending')
       table.unique(['user_id', 'friend_id'])
       table.timestamps(true, true)
     })

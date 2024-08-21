@@ -27,7 +27,12 @@ Route.get('/', async () => {
 Route.post('/register','AuthController.register')
 Route.post('/login', 'AuthController.login')
 
-Route.get('/users', 'AuthController.index').middleware('auth:api')
+Route.post('/friends/add', 'FriendshipsController.addFriend').middleware('auth')
+Route.post('/friends/accept', 'FriendshipsController.acceptFriend').middleware('auth')
+Route.post('/friends/block', 'FriendshipsController.blockFriend').middleware('auth')
+Route.get('/friends', 'FriendshipsController.listFriends').middleware('auth')
+
+/*Route.get('/users', 'AuthController.index').middleware('auth:api')
 
 Route.get('/admin', async ({ response }) => {
   return response.json({ message: 'You are an admin' })
@@ -39,4 +44,4 @@ Route.get('/support', async ({ response }) => {
 
 Route.post('/adresses', 'AdressesController.store').middleware('auth:api')
 Route.get('/adresses', 'AdressesController.showAdressesByUser').middleware('auth:api')
-Route.get('index', 'AdressesController.index').middleware(['auth:api', 'role:admin'])
+Route.get('index', 'AdressesController.index').middleware(['auth:api', 'role:admin']) */

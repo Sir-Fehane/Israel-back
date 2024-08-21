@@ -14,6 +14,8 @@ export default class AuthController {
     public async login({ request, auth, response }: HttpContextContract){
         const { userId, password } = request.all()
 
+        console.log(userId, password)
+
         try {
             const token = await auth.use('api').attempt(userId, password)
             const user = auth.user;
