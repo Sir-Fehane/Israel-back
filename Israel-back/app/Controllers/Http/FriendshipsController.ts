@@ -2,7 +2,6 @@ import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import User from 'App/Models/User'
 
 export default class FriendsController {
-  // Añadir un amigo por username
   public async addFriend({ request, auth, response }: HttpContextContract) {
     const friendUsername = request.input('username')
     const user = auth.user!
@@ -21,7 +20,6 @@ export default class FriendsController {
     }
   }
 
-  // Aceptar solicitud de amistad por username
   public async acceptFriend({ request, auth, response }: HttpContextContract) {
     const friendUsername = request.input('username')
     const user = auth.user!
@@ -41,7 +39,6 @@ export default class FriendsController {
     }
   }
 
-  // Bloquear a un amigo por username
   public async blockFriend({ request, auth, response }: HttpContextContract) {
     const friendUsername = request.input('username')
     const user = auth.user!
@@ -60,18 +57,15 @@ export default class FriendsController {
     }
   }
 
-  // Listar amigos
   public async listFriends({ auth, response }: HttpContextContract) {
     const user = auth.user!
 
     try {
-      // Solicitudes donde el usuario actual envió la solicitud
       const sentRequests = await user.related('friends')
         .query()
         .select('users.username')
         .pivotColumns(['status'])
 
-      // Solicitudes donde el usuario actual recibió la solicitud
       const receivedRequests = await User.query()
         .whereHas('friends', (query) => {
           query.where('user_friends.friend_id', user.id)
@@ -81,13 +75,11 @@ export default class FriendsController {
           friendQuery.where('user_id', user.id).pivotColumns(['status'])
         })
 
-      // Mapeo de solicitudes enviadas
       const sentMapped = sentRequests.map(friend => ({
         username: friend.username,
         status: friend.$extras.pivot_status
       }))
 
-      // Mapeo de solicitudes recibidas
       const receivedMapped = receivedRequests.flatMap(friend => 
         friend.friends.map(f => ({
           username: friend.username,
@@ -95,7 +87,6 @@ export default class FriendsController {
         }))
       )
 
-      // Combinamos ambas listas
       const friendsList = [...sentMapped, ...receivedMapped]
 
       return response.status(200).json(friendsList)

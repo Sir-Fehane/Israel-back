@@ -5,15 +5,12 @@ import User from 'App/Models/User'
 import { randomBytes } from 'crypto'
 
 export default class GamesController {
-  // Crear una nueva sala de juego
   public async createRoom({ auth, response, request }: HttpContextContract) {
     const user = auth.user!
 
-    // Generar un código al azar (4 dígitos)
     const numsala = parseInt(randomBytes(2).toString('hex'), 16) % 10000
     const { width, height } = request.all()
 
-    // Validación de tamaño del tablero
     if (width < 6 || width > 9 || height < 6 || height > 9) {
       return response.badRequest('El tablero debe tener un tamaño entre 6x6 y 9x9')
     }
@@ -36,7 +33,6 @@ export default class GamesController {
     });
   }
 
-  // Unirse a una sala por código
   public async joinRoom({ request, auth, response }: HttpContextContract) {
     const { numsala } = request.only(['numsala'])
     const user = auth.user!
@@ -53,25 +49,19 @@ export default class GamesController {
     game.playerTwo = user.id
     await game.save()
 
-    // Inicializa el tablero y otros estados del juego
     const board = Array(game.height).fill(0).map(() => Array(game.width).fill(0))
     game.board = JSON.stringify(board)
-    game.currentTurn = game.playerOne // Puede ser cualquier lógica para el primer turno
+    game.currentTurn = game.playerOne 
     await game.save()
 
-    // Emitir el evento por websocket
     Ws.io.emit(`game_${game.id}`, { game })
 
     return response.status(200).json({ message: 'Te has unido a la sala.' })
   }
-
-  // Unirse a una sala de un amigo
   public async joinRoomByFriend({ request, auth, response }: HttpContextContract) {
     const { username } = request.only(['username'])
     const user = auth.user!
     const friend = await User.findByOrFail('username', username)
-
-    // Aquí puedes agregar lógica para verificar si `friendId` es amigo del usuario
     const game = await Game.query()
       .where('playerOne', friend.id)
       .andWhereNull('playerTwo')
@@ -84,13 +74,10 @@ export default class GamesController {
     game.playerTwo = user.id
     await game.save()
 
-    // Emitir el evento por websocket
     Ws.io.emit(`game_${game.id}`, { game })
 
     return response.status(200).json({ message: 'Te has unido a la sala de tu amigo.' })
   }
-
-  // Realizar un movimiento en el juego
   public async move({ request, auth, response }: HttpContextContract) {
     const { column } = request.all()
     const user = auth.user!
@@ -127,20 +114,18 @@ export default class GamesController {
     return response.ok({ game })
   }
 
-  // Lógica para colocar la ficha en la columna
   private placeChip(board: number[][], column: number, height: number): number {
     for (let row = height - 1; row >= 0; row--) {
       if (board[row][column] === 0) {
-        board[row][column] = 1 // Se puede mejorar para diferenciar jugadores
+        board[row][column] = 1
         return row
       }
     }
     return -1
   }
 
-  // Verificar si hay un ganador
+
   private checkWinner(board: number[][], row: number, column: number, width: number, height: number): boolean {
-    // Implementa la lógica de verificación aquí
     return false
   }
 
@@ -164,7 +149,6 @@ export default class GamesController {
     const playerId = auth.user!.id
 
     try {
-      // Buscar partidas donde el jugador es player_one o player_two
       const games = await Game.query()
         .where('player_one', playerId)
         .orWhere('player_two', playerId)
