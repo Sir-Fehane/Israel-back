@@ -8,18 +8,18 @@ export default class GamesController {
   // Crear una nueva sala de juego
   public async createRoom({ auth, response, request }: HttpContextContract) {
     const user = auth.user!
-
+  
     // Generar un código al azar (4 dígitos)
     const numsala = parseInt(randomBytes(2).toString('hex'), 16) % 10000
     const { width, height } = request.all()
-
+  
     // Validación de tamaño del tablero
     if (width < 6 || width > 9 || height < 6 || height > 9) {
       return response.badRequest('El tablero debe tener un tamaño entre 6x6 y 9x9')
     }
-
+  
     const board = Array(height).fill(0).map(() => Array(width).fill(0))
-
+  
     const game = await Game.create({
       playerOne: user.id,
       numsala,
@@ -28,11 +28,12 @@ export default class GamesController {
       board: JSON.stringify(board),
       currentTurn: user.id,
     })
-
+  
     return response.status(201).json({
       message: 'Sala creada con éxito.',
       numsala: game.numsala,
-    })
+      creator: user.username,
+    });
   }
 
   // Unirse a una sala por código
@@ -135,5 +136,20 @@ export default class GamesController {
   private checkWinner(board: number[][], row: number, column: number, width: number, height: number): boolean {
     // Implementa la lógica de verificación aquí
     return false
+  }
+  public async getRoomDetails({ params, response }: HttpContextContract) {
+    const { numsala } = params
+  
+    const game = await Game.query()
+      .where('numsala', numsala)
+      .preload('playerOneUser', (query) => query.select('username'))
+      .preload('playerTwoUser', (query) => query.select('username'))
+      .first()
+  
+    if (!game) {
+      return response.status(404).json({ error: 'Sala no encontrada.' })
+    }
+  
+    return response.status(200).json({ game })
   }
 }

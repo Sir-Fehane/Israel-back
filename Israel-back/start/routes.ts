@@ -36,6 +36,7 @@ Route.get('/friends', 'FriendshipsController.listFriends').middleware('auth')
 Route.post('/games/create', 'GamesController.createRoom').middleware('auth')
 Route.post('/games/join', 'GamesController.joinRoom').middleware('auth')
 Route.post('/games/join/friend', 'GamesController.joinRoomByFriend').middleware('auth')
+Route.get('room/:numsala', 'GamesController.getRoomDetails')
 
 /*Route.get('/users', 'AuthController.index').middleware('auth:api')
 
