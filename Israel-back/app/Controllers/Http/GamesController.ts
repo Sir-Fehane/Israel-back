@@ -8,18 +8,18 @@ export default class GamesController {
   // Crear una nueva sala de juego
   public async createRoom({ auth, response, request }: HttpContextContract) {
     const user = auth.user!
-  
+
     // Generar un código al azar (4 dígitos)
     const numsala = parseInt(randomBytes(2).toString('hex'), 16) % 10000
     const { width, height } = request.all()
-  
+
     // Validación de tamaño del tablero
     if (width < 6 || width > 9 || height < 6 || height > 9) {
       return response.badRequest('El tablero debe tener un tamaño entre 6x6 y 9x9')
     }
-  
+
     const board = Array(height).fill(0).map(() => Array(width).fill(0))
-  
+
     const game = await Game.create({
       playerOne: user.id,
       numsala,
@@ -28,7 +28,7 @@ export default class GamesController {
       board: JSON.stringify(board),
       currentTurn: user.id,
     })
-  
+
     return response.status(201).json({
       message: 'Sala creada con éxito.',
       numsala: game.numsala,
@@ -37,33 +37,33 @@ export default class GamesController {
   }
 
   // Unirse a una sala por código
- public async joinRoom({ request, auth, response }: HttpContextContract) {
-  const { numsala } = request.only(['numsala'])
-  const user = auth.user!
+  public async joinRoom({ request, auth, response }: HttpContextContract) {
+    const { numsala } = request.only(['numsala'])
+    const user = auth.user!
 
-  const game = await Game.query()
-    .where('numsala', numsala)
-    .andWhereNull('playerTwo')
-    .first()
+    const game = await Game.query()
+      .where('numsala', numsala)
+      .andWhereNull('playerTwo')
+      .first()
 
-  if (!game) {
-    return response.status(404).json({ error: 'Sala no encontrada o ya está llena.' })
+    if (!game) {
+      return response.status(404).json({ error: 'Sala no encontrada o ya está llena.' })
+    }
+
+    game.playerTwo = user.id
+    await game.save()
+
+    // Inicializa el tablero y otros estados del juego
+    const board = Array(game.height).fill(0).map(() => Array(game.width).fill(0))
+    game.board = JSON.stringify(board)
+    game.currentTurn = game.playerOne // Puede ser cualquier lógica para el primer turno
+    await game.save()
+
+    // Emitir el evento por websocket
+    Ws.io.emit(`game_${game.id}`, { game })
+
+    return response.status(200).json({ message: 'Te has unido a la sala.' })
   }
-
-  game.playerTwo = user.id
-  await game.save()
-
-  // Inicializa el tablero y otros estados del juego
-  const board = Array(game.height).fill(0).map(() => Array(game.width).fill(0))
-  game.board = JSON.stringify(board)
-  game.currentTurn = game.playerOne // Puede ser cualquier lógica para el primer turno
-  await game.save()
-
-  // Emitir el evento por websocket
-  Ws.io.emit(`game_${game.id}`, { game })
-
-  return response.status(200).json({ message: 'Te has unido a la sala.' })
-}
 
   // Unirse a una sala de un amigo
   public async joinRoomByFriend({ request, auth, response }: HttpContextContract) {
@@ -143,21 +143,23 @@ export default class GamesController {
     // Implementa la lógica de verificación aquí
     return false
   }
+
   public async getRoomDetails({ params, response }: HttpContextContract) {
     const { numsala } = params
-  
+
     const game = await Game.query()
       .where('numsala', numsala)
       .preload('playerOneUser', (query) => query.select('username'))
       .preload('playerTwoUser', (query) => query.select('username'))
       .first()
-  
+
     if (!game) {
       return response.status(404).json({ error: 'Sala no encontrada.' })
     }
-  
+
     return response.status(200).json({ game })
   }
+
   public async getHistory({ auth, response }: HttpContextContract) {
     const playerId = auth.user!.id
 
