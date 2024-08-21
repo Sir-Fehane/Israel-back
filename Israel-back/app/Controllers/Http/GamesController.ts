@@ -158,4 +158,22 @@ export default class GamesController {
   
     return response.status(200).json({ game })
   }
+  public async getHistory({ auth, response }: HttpContextContract) {
+    const playerId = auth.user!.id
+
+    try {
+      // Buscar partidas donde el jugador es player_one o player_two
+      const games = await Game.query()
+        .where('player_one', playerId)
+        .orWhere('player_two', playerId)
+        .preload('playerOneUser')
+        .preload('playerTwoUser')
+        .preload('winnerUser')
+
+      return response.ok(games)
+    } catch (error) {
+      console.error('Error fetching player games:', error)
+      return response.status(500).send('Internal Server Error')
+    }
+  }
 }
