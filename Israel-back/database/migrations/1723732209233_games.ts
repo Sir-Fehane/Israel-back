@@ -13,6 +13,7 @@ export default class extends BaseSchema {
       table.integer('width').unsigned()
       table.integer('height').unsigned()
       table.string('board').unsigned()
+      table.integer('current_turn').unsigned()
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
        */
