@@ -37,27 +37,33 @@ export default class GamesController {
   }
 
   // Unirse a una sala por código
-  public async joinRoom({ request, auth, response }: HttpContextContract) {
-    const { numsala } = request.only(['numsala'])
-    const user = auth.user!
+ public async joinRoom({ request, auth, response }: HttpContextContract) {
+  const { numsala } = request.only(['numsala'])
+  const user = auth.user!
 
-    const game = await Game.query()
-      .where('numsala', numsala)
-      .andWhereNull('playerTwo')
-      .first()
+  const game = await Game.query()
+    .where('numsala', numsala)
+    .andWhereNull('playerTwo')
+    .first()
 
-    if (!game) {
-      return response.status(404).json({ error: 'Sala no encontrada o ya está llena.' })
-    }
-
-    game.playerTwo = user.id
-    await game.save()
-
-    // Emitir el evento por websocket
-    Ws.io.emit(`game_${game.id}`, { game })
-
-    return response.status(200).json({ message: 'Te has unido a la sala.' })
+  if (!game) {
+    return response.status(404).json({ error: 'Sala no encontrada o ya está llena.' })
   }
+
+  game.playerTwo = user.id
+  await game.save()
+
+  // Inicializa el tablero y otros estados del juego
+  const board = Array(game.height).fill(0).map(() => Array(game.width).fill(0))
+  game.board = JSON.stringify(board)
+  game.currentTurn = game.playerOne // Puede ser cualquier lógica para el primer turno
+  await game.save()
+
+  // Emitir el evento por websocket
+  Ws.io.emit(`game_${game.id}`, { game })
+
+  return response.status(200).json({ message: 'Te has unido a la sala.' })
+}
 
   // Unirse a una sala de un amigo
   public async joinRoomByFriend({ request, auth, response }: HttpContextContract) {
