@@ -15,6 +15,9 @@ export default class Game extends BaseModel {
   @column()
   public winner: number
 
+  @column()
+  public numsala: number
+
   @belongsTo(() => User, {
     foreignKey: 'playerOne',
   })

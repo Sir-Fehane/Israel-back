@@ -32,6 +32,11 @@ Route.post('/friends/accept', 'FriendshipsController.acceptFriend').middleware('
 Route.post('/friends/block', 'FriendshipsController.blockFriend').middleware('auth')
 Route.get('/friends', 'FriendshipsController.listFriends').middleware('auth')
 
+
+Route.post('/games/create', 'GamesController.createRoom').middleware('auth')
+Route.post('/games/join', 'GamesController.joinRoom').middleware('auth')
+Route.post('/games/join/friend', 'GamesController.joinRoomByFriend').middleware('auth')
+
 /*Route.get('/users', 'AuthController.index').middleware('auth:api')
 
 Route.get('/admin', async ({ response }) => {

@@ -65,18 +65,40 @@ export default class FriendsController {
     const user = auth.user!
 
     try {
-      const friends = await user.related('friends')
+      // Solicitudes donde el usuario actual envió la solicitud
+      const sentRequests = await user.related('friends')
         .query()
-        .select('users.username') // Seleccionar el campo username de la tabla users
-        .pivotColumns(['status']) // Incluir el campo status desde la tabla pivote
+        .select('users.username')
+        .pivotColumns(['status'])
 
-      // Mapeo de los amigos para incluir el estado desde el pivote
-      const friendList = friends.map(friend => ({
+      // Solicitudes donde el usuario actual recibió la solicitud
+      const receivedRequests = await User.query()
+        .whereHas('friends', (query) => {
+          query.where('user_friends.friend_id', user.id)
+        })
+        .select('username', 'id')
+        .preload('friends', (friendQuery) => {
+          friendQuery.where('user_id', user.id).pivotColumns(['status'])
+        })
+
+      // Mapeo de solicitudes enviadas
+      const sentMapped = sentRequests.map(friend => ({
         username: friend.username,
-        status: friend.$extras.pivot_status // Acceder al status desde $extras usando pivot_
+        status: friend.$extras.pivot_status
       }))
 
-      return response.status(200).json(friendList)
+      // Mapeo de solicitudes recibidas
+      const receivedMapped = receivedRequests.flatMap(friend => 
+        friend.friends.map(f => ({
+          username: friend.username,
+          status: f.$extras.pivot_status
+        }))
+      )
+
+      // Combinamos ambas listas
+      const friendsList = [...sentMapped, ...receivedMapped]
+
+      return response.status(200).json(friendsList)
     } catch (error) {
       console.error('Error fetching friends:', error)
       return response.status(500).json({ error: 'Unable to fetch friends.' })
