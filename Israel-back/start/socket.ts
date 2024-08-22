@@ -16,7 +16,7 @@ Ws.io.on('connection', (socket) => {
 
     // Emitir a todos los jugadores de la sala que un nuevo jugador se ha unido
     socket.join(roomCode);
-    
+
     socket.to(roomCode).emit('playerJoined', { username });
 
     // Si hay dos jugadores, puedes notificar a ambos que están listos
@@ -30,9 +30,8 @@ Ws.io.on('connection', (socket) => {
   socket.on('formSubmit', ({ roomCode, formData }) => {
     // Aquí puedes manejar el envío del formulario
     console.log('Form data received for room:', roomCode, formData);
-
     // Notificar a ambos jugadores que el formulario se ha enviado y redirigirlos
-    Ws.io.to(roomCode).emit('navigateToBoard');
+    Ws.io.to(roomCode).emit('navigateToBoard', formData);
   });
 
   socket.on('disconnect', () => {
@@ -47,4 +46,7 @@ Ws.io.on('connection', (socket) => {
       }
     }
   });
+
+
+  
 });
