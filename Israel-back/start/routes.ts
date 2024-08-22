@@ -26,6 +26,7 @@ Route.get('/', async () => {
 
 Route.post('/register','AuthController.register')
 Route.post('/login', 'AuthController.login')
+Route.get('/me', 'AuthController.me').middleware('auth')
 
 Route.post('/friends/add', 'FriendshipsController.addFriend').middleware('auth')
 Route.post('/friends/accept', 'FriendshipsController.acceptFriend').middleware('auth')

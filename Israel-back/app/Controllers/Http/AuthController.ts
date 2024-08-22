@@ -31,4 +31,10 @@ export default class AuthController {
 
         return response.json(users)
     }
+
+    public async me({ auth, response }: HttpContextContract){
+        const user = auth.user
+
+        return response.json(user)
+    }
 }
