@@ -93,9 +93,10 @@ Ws.io.on('connection', (socket) => {
     }
   });
 
-  socket.on('gameWon', ({ roomId, winner }) => {
+  socket.on('gameWon', ({ roomId, winner, loser }) => {
     console.log('Game won by:', winner);
-    Ws.io.to(roomId).emit('gameOver', { roomId ,winner });
+    console.log('Game lost by:', loser);
+    Ws.io.to(roomId).emit('gameOver', { roomId ,winner, loser });
     console.log('si entra')
   });
 });

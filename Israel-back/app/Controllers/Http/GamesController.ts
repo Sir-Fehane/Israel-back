@@ -164,17 +164,21 @@ export default class GamesController {
     }
   }
   public async setWinner({ request, response }: HttpContextContract) {
-    const { numsala, username } = request.all()
+    const { numsala, winner, loser } = request.all()
     const game = await Game.findByOrFail('numsala', numsala)
     if (!game) {
       return response.status(404).json({ error: 'Partida no encontrada.' })
     }
-    const user_winner = await User.findByOrFail('username', username)
+    const user_winner = await User.findByOrFail('username', winner)
     game.winner = user_winner.id
     await game.save()
     user_winner.wonGames++
     user_winner.playedGames++
     await user_winner.save()
+    const user_loser = await User.findByOrFail('username', loser)
+    user_loser.playedGames++
+    user_loser.lostGames++
+    user_loser.save()
     return response.status(200).json({ message: 'Ganador guardado con éxito.' })
   }
 }
