@@ -155,6 +155,7 @@ export default class GamesController {
         .preload('playerOneUser')
         .preload('playerTwoUser')
         .preload('winnerUser')
+        .select('created_at', 'updated_at')
 
       return response.ok(games)
     } catch (error) {
