@@ -27,15 +27,18 @@ Ws.io.on('connection', (socket) => {
     // Emitir a todos los jugadores de la sala que un nuevo jugador se ha unido
     socket.join(roomCode);
     console.log(rooms[roomCode].players)
+    console.log(rooms[roomCode])
     socket.to(roomCode).emit('playerJoined', { username });
 
     // Si hay dos jugadores, asignar el turno al primero que se unió
     if (rooms[roomCode].players.length === 2) {
+      console.log('Both players are ready. Starting game...');
       rooms[roomCode].currentPlayer = rooms[roomCode].players[0].id; // El primer jugador
       Ws.io.to(roomCode).emit('startGame', {
         message: 'Ambos jugadores están listos. ¡Comencemos!',
         currentPlayer: rooms[roomCode].currentPlayer,
       });
+      console.log(rooms[roomCode].currentPlayer)
     }
   });
 
@@ -43,6 +46,7 @@ Ws.io.on('connection', (socket) => {
     // Cambiar el turno al siguiente jugador
     console.log('Move received:', roomCode, board, currentPlayer);
     const room = rooms[roomCode];
+    room.currentPlayer = currentPlayer;
     console.log(room)
     console.log(room.players)
     //Aqui se muere
@@ -71,11 +75,6 @@ Ws.io.on('connection', (socket) => {
       rooms[roomCode] = { players: [], currentPlayer: null };
     }
   
-    // Almacenar ambos jugadores en la sala
-    rooms[roomCode].players = [
-      { id: clientId, username: playerOne },
-      { id: clientId, username: playerTwo }
-    ];
   
     // Unirse a la sala
     socket.join(roomCode);
