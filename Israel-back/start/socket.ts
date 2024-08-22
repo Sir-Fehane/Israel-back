@@ -91,5 +91,9 @@ Ws.io.on('connection', (socket) => {
       });
     }
   });
-  
+
+  socket.on('gameWon', ({ roomId, winner }) => {
+    Ws.io.to(roomId).emit('gameOver', { roomId ,winner });
+    console.log('si entra')
+  });
 });
