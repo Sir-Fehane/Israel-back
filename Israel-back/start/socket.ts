@@ -88,11 +88,13 @@ Ws.io.on('connection', (socket) => {
       Ws.io.to(roomCode).emit('startGame', {
         message: 'Ambos jugadores están listos. ¡Comencemos!',
         currentPlayer: rooms[roomCode].currentPlayer,
+        players: rooms[roomCode].players,
       });
     }
   });
 
   socket.on('gameWon', ({ roomId, winner }) => {
+    console.log('Game won by:', winner);
     Ws.io.to(roomId).emit('gameOver', { roomId ,winner });
     console.log('si entra')
   });

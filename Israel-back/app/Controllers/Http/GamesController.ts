@@ -162,4 +162,18 @@ export default class GamesController {
       return response.status(500).send('Internal Server Error')
     }
   }
+  public async setWinner({ request, response }: HttpContextContract) {
+    const { numsala, username } = request.all()
+    const game = await Game.findByOrFail('numsala', numsala)
+    if (!game) {
+      return response.status(404).json({ error: 'Partida no encontrada.' })
+    }
+    const user_winner = await User.findByOrFail('username', username)
+    game.winner = user_winner.id
+    await game.save()
+    user_winner.wonGames++
+    user_winner.playedGames++
+    await user_winner.save()
+    return response.status(200).json({ message: 'Ganador guardado con éxito.' })
+  }
 }
